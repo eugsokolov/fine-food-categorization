@@ -11,20 +11,24 @@ from nltk.corpus import stopwords
 
 con = sqlite3.connect('data/database.sqlite')
 
-# https://www.kaggle.com/c/word2vec-nlp-tutorial/details/part-1-for-beginners-bag-of-words
 def preprocess(text):
-	tokens = text.str.lower().str.split()
-	tokens = word_tokenize(tokens)
+	tokens = word_tokenize(text)
+	s1 = dict((k,1) for k in stopwords.words('english'))
+	s2 = dict((k,1) for k in string.punctuation)
+	tokens = [i for i in tokens if i not in s1 and i not in s2]
+	#st = PorterStemmer()
+	#tokens = [st.stem(i) for i in tokens]
 	return tokens
 
 def bag_of_words(data):
 	bow = {}
-	tokens = preprocess(data['Text'])
-	for t in tokens:
-	   if word in bow:
-		bow[t] += 1.0
-	   else:
-		bow[t] = 1.0
+	for text in data:
+	  tokens = preprocess(text)
+	  for token in tokens:
+	     if token in bow:
+		bow[token] += 1.0
+	     else:
+		bow[token] = 1.0
 	return bow
 
 low = pd.read_sql_query("""
@@ -45,10 +49,12 @@ FROM Reviews
 WHERE Score > 3
 """, con)
 
-lowBOW = bag_of_words(low)
-medBOW = bag_of_words(med)
-highBOW = bag_of_words(high)
+lowBOW = bag_of_words(low['Text'])
+print lowBOW
 
 
-print highBOW
+
+#medBOW = bag_of_words(med['Text'])
+#highBOW = bag_of_words(high['Text'])
+
 
