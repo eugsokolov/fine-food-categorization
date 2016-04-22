@@ -10,7 +10,17 @@ from nltk.corpus import stopwords
 #nltk.download('punkt')
 #nltk.download('stopwords')
 
+from sklearn.cross_validation import train_test_split
+
 con = sqlite3.connect('data/database.sqlite')
+
+def processModel(model, train):
+	count = 0
+	for traincv, testcv in cv:
+		pass
+
+	accuracy = 1-count/float(1)
+	print "accuracy: " + str(accuracy)
 
 def preprocess(text):
 	tokens = word_tokenize(text)
@@ -21,6 +31,12 @@ def preprocess(text):
 	#tokens = [st.stem(i) for i in tokens]
 	tokens = ngrams(tokens, 2)
 	return tokens
+
+def partition(x):
+	if x < 3:
+		return 'negative'
+	else:
+		return 'positive'
 
 def bag_of_words(data):
 	bow = {}
@@ -33,31 +49,20 @@ def bag_of_words(data):
 		bow[token] = 1.0
 	return bow
 
-low = pd.read_sql_query("""
+q = pd.read_sql_query("""
 SELECT Score, Summary, Text
 FROM Reviews
-WHERE Score < 3
+WHERE Score != 3
 """, con)
 
-med = pd.read_sql_query("""
-SELECT Score, Summary, Text
-FROM Reviews
-WHERE Score == 3
-""", con)
+reviews = q['Text'] 
+score = low['Score']
+score = score.map(partition)
+Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
 
-high = pd.read_sql_query("""
-SELECT Score, Summary, Text
-FROM Reviews
-WHERE Score > 3
-""", con)
+### Training Set
+train = []
 
-lowBOW = bag_of_words(low['Text'])
 
-for k,v in lowBOW.iteritems():
-	if v > 150:
-		print k
-
-#medBOW = bag_of_words(med['Text'])
-#highBOW = bag_of_words(high['Text'])
-
+### Test Set
 
