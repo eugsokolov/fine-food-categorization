@@ -4,6 +4,7 @@ import numpy as np
 
 import string
 from nltk import word_tokenize
+from nltk.util import ngrams
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 #nltk.download('punkt')
@@ -18,6 +19,7 @@ def preprocess(text):
 	tokens = [i for i in tokens if i not in s1 and i not in s2]
 	#st = PorterStemmer()
 	#tokens = [st.stem(i) for i in tokens]
+	tokens = ngrams(tokens, 2)
 	return tokens
 
 def bag_of_words(data):
@@ -50,9 +52,10 @@ WHERE Score > 3
 """, con)
 
 lowBOW = bag_of_words(low['Text'])
-print lowBOW
 
-
+for k,v in lowBOW.iteritems():
+	if v > 150:
+		print k
 
 #medBOW = bag_of_words(med['Text'])
 #highBOW = bag_of_words(high['Text'])
