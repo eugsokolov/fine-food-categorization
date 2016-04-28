@@ -11,6 +11,7 @@ from nltk.corpus import stopwords
 #nltk.download('stopwords')
 
 from sklearn.cross_validation import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
 
 con = sqlite3.connect('data/database.sqlite')
 
@@ -29,7 +30,7 @@ def preprocess(text):
 	tokens = [i for i in tokens if i not in s1 and i not in s2]
 	#st = PorterStemmer()
 	#tokens = [st.stem(i) for i in tokens]
-	tokens = ngrams(tokens, 2)
+	#tokens = ngrams(tokens, 2)
 	return tokens
 
 def partition(x):
@@ -56,13 +57,15 @@ WHERE Score != 3
 """, con)
 
 reviews = q['Text'] 
-score = low['Score']
+score = q['Score']
 score = score.map(partition)
 Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
 
+#print bag_of_words(Xtrain) # returns hash BOW
 ### Training Set
-train = []
 
+#vectorizer = CountVectorizer(max_features = 500, stop_words='english')
+#matrix  = vectorizer.fit_transform(train)
 
 ### Test Set
 
