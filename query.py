@@ -56,16 +56,26 @@ FROM Reviews
 WHERE Score != 3
 """, con)
 
-reviews = q['Text'] 
+reviews = q['Text']
 score = q['Score']
 score = score.map(partition)
 Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
 
-#print bag_of_words(Xtrain) # returns hash BOW
+print Xtrain
 ### Training Set
+#print bag_of_words(Xtrain) # returns hash BOW
+#l = [preprocess(i) for i in Xtrain)] # returns list of preprocessed items in Xtrain
 
 #vectorizer = CountVectorizer(max_features = 500, stop_words='english')
-#matrix  = vectorizer.fit_transform(train)
+#xTrain_tfidf = vectorizer.fit_transform(str(l))
 
 ### Test Set
+#test = [preprocess(i) for i in Xtrain]
+#X_new_counts = count_vect.transform(test)
+#X_test_tfidf = tfidf_transformer.transform(X_new_counts)
 
+
+
+prediction = dict()
+logreg.fit(X_train_tfidf, y_train)
+prediction['Logistic'] = logreg.predict(X_test_tfidf)
