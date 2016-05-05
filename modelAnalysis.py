@@ -38,6 +38,8 @@ intab = string.punctuation
 outtab = "                                "
 trantab = str.maketrans(intab, outtab)
 
+# TODO add lemmatization
+
 stemmer = PorterStemmer()
 from nltk.corpus import stopwords
 def stem_tokens(tokens, stemmer):
@@ -91,8 +93,9 @@ prediction['Logistic'] = logreg.predict(X_test_tfidf)
 print("done logistic")
 
 from sklearn import svm
-clf = svm.SVR().fit(X_train_tfidf, Ytrain)
-prediction['SVM'] = logreg.predict(X_test_tfidf)
+#clf = svm.SVR().fit(X_train_tfidf, Ytrain)
+# NEED FEATURE REDUCTION
+#prediction['SVM'] = logreg.predict(X_test_tfidf)
 print("done svm")
 
 from sklearn.ensemble import RandomForestClassifier
