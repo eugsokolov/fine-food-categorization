@@ -21,7 +21,7 @@ def processModel(model, train):
 		pass
 
 	accuracy = 1-count/float(1)
-	print "accuracy: " + str(accuracy)
+	print("accuracy: " + str(accuracy))
 
 def preprocess(text):
 	tokens = word_tokenize(text)
@@ -45,9 +45,9 @@ def bag_of_words(data):
 	  tokens = preprocess(text)
 	  for token in tokens:
 	     if token in bow:
-		bow[token] += 1.0
+                bow[token]+=1.0
 	     else:
-		bow[token] = 1.0
+                bow[token]=1.0
 	return bow
 
 q = pd.read_sql_query("""
@@ -61,13 +61,14 @@ score = q['Score']
 score = score.map(partition)
 Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
 
-print Xtrain
 ### Training Set
 #print bag_of_words(Xtrain) # returns hash BOW
 #l = [preprocess(i) for i in Xtrain)] # returns list of preprocessed items in Xtrain
 
-#vectorizer = CountVectorizer(max_features = 500, stop_words='english')
-#xTrain_tfidf = vectorizer.fit_transform(str(l))
+count_vect = CountVectorizer()
+X_train_counts = count_vect.fit_transform(corpus)
+
+
 
 ### Test Set
 #test = [preprocess(i) for i in Xtrain]
@@ -76,6 +77,7 @@ print Xtrain
 
 
 
+
+### Model Analysis
 prediction = dict()
-logreg.fit(X_train_tfidf, y_train)
-prediction['Logistic'] = logreg.predict(X_test_tfidf)
+
