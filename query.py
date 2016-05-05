@@ -15,6 +15,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 con = sqlite3.connect('data/database.sqlite')
 
+positive_words = np.genfromtxt('Positive_&_Negative_Words.csv', dtype = 'str', usecols = (0, ), skip_header = 1, delimiter = ',') # Unique positive words from Harvard lexicon
+negative_words = np.genfromtxt('Positive_&_Negative_Words.csv', dtype = 'str', usecols = (1, ), skip_header = 1, delimiter = ',') # Unique negative words from Harvard lexicon
+
+print(positive_words)
+print('\n---------------------------------------\n')
+print(negative_words)
 def processModel(model, train):
 	count = 0
 	for traincv, testcv in cv:
@@ -66,7 +72,7 @@ Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, r
 #l = [preprocess(i) for i in Xtrain)] # returns list of preprocessed items in Xtrain
 
 count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(corpus)
+# X_train_counts = count_vect.fit_transform(corpus)
 
 
 
