@@ -79,6 +79,8 @@ for text in Xtest:
 X_new_counts = count_vect.transform(test_set)
 X_test_tfidf = tfidf_transformer.transform(X_new_counts)
 
+print("done preprocessing")
+
 ### Model Analysis
 prediction = dict()
 
@@ -86,22 +88,27 @@ from sklearn import linear_model
 logreg = linear_model.LogisticRegression(C=1e5)
 logreg.fit(X_train_tfidf, Ytrain)
 prediction['Logistic'] = logreg.predict(X_test_tfidf)
+print("done logistic")
 
 from sklearn import svm
 clf = svm.SVR().fit(X_train_tfidf, Ytrain)
 prediction['SVM'] = logreg.predict(X_test_tfidf)
+print("done svm")
 
 from sklearn.ensemble import RandomForestClassifier
 #rf = RandomForestClassifier(n_estimators=2).fit(X_train_tfidf, Ytrain)
 #prediction['Random Forest'] = rf.predict(X_test_tfidf)
+print("done rf")
 
 from sklearn.naive_bayes import MultinomialNB
 model = MultinomialNB().fit(X_train_tfidf, Ytrain)
 prediction['Multinomial'] = model.predict(X_test_tfidf)
+print("done mnb")
 
 from sklearn.naive_bayes import BernoulliNB
 model = BernoulliNB().fit(X_train_tfidf, Ytrain)
 prediction['Bernoulli'] = model.predict(X_test_tfidf)
+print("done bnb")
 
 y = np.array(Ytest).astype('str')
 for model, predicted in prediction.items():
