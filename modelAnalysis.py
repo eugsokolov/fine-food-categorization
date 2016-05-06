@@ -4,8 +4,6 @@ import numpy as np
 #nltk.download('punkt')
 #nltk.download('stopwords')
 from sklearn.cross_validation import train_test_split
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import metrics
 
 con = sqlite3.connect('data/database.sqlite')
@@ -43,10 +41,10 @@ def stem_tokens(tokens, stemmer):
 
 # TODO add lemmatization
 
+s1 = dict((k,1) for k in stopwords.words('english'))
+s2 = dict((k,1) for k in string.punctuation)
 def tokenize(text):
-    tokens = word_tokenize(text)
-    s1 = dict((k,1) for k in stopwords.words('english'))
-    s2 = dict((k,1) for k in string.punctuation)
+    tokens = word_tokenize(text.lower())
     #tokens = [word for word in tokens if word not in stopwords.words('english')]
     tokens = [i for i in tokens if i not in s1 and i not in s2]
     #tokens = ngrams(tokens, 2)
@@ -55,37 +53,33 @@ def tokenize(text):
 
 ### Training Set
 corpus = []
-i=0
 for text in Xtrain:
-    text = text.lower()
-    text = text.translate(trantab)
-    text=tokenize(text)
+    text = tokenize(text)
     corpus.append(text)
+exit()
 
-count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(corpus)
+#create a matrix of token counts
+from sklearn.feature_extraction.text import CountVectorizer
+X_train_counts = CountVectorizer.fit_transform(corpus)
 
-
-tfidf_transformer = TfidfTransformer()
-X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+#create a matrix of tfidf
+from sklearn.feature_extraction.text import TfidfTransformer
+X_train_tfidf = TfidfTransformer.fit_transform(X_train_counts)
 
 ### Test Set
 test_set = []
 for text in Xtest:
-    text = text.lower()
-    text = text.translate(trantab)
-    text=tokenize(text)
+    text = tokenize(text)
     test_set.append(text)
 
-X_new_counts = count_vect.transform(test_set)
-X_test_tfidf = tfidf_transformer.transform(X_new_counts)
+X_new_counts = CountVectorizer.transform(test_set)
+X_test_tfidf = TfidfTransformer.transform(X_new_counts)
 
 print("done preprocessing")
 
-
-
 ### Feature Reduction
-
+# take top N thousand words
+# use only semantic lexicons
 
 ### Model Analysis
 prediction = dict()
@@ -94,12 +88,12 @@ from sklearn import linear_model
 logreg = linear_model.LogisticRegression(C=1e5)
 logreg.fit(X_train_tfidf, Ytrain)
 prediction['Logistic'] = logreg.predict(X_test_tfidf)
-#print("done logistic")
+print("done logistic")
 
-from sklearn import svm
+#from sklearn import svm
 #clf = svm.SVR().fit(X_train_tfidf, Ytrain)
 #prediction['SVM'] = logreg.predict(X_test_tfidf)
-print("done svm")
+#print("done svm")
 
 #from sklearn.ensemble import RandomForestClassifier
 #rf = RandomForestClassifier(n_estimators=2).fit(X_train_tfidf, Ytrain)
