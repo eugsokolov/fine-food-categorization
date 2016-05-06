@@ -31,8 +31,6 @@ for summary in q['Summary']:
     s = len(summary)
 
 
-Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
-
 ### Preprocessing
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
@@ -62,33 +60,27 @@ def tokenize(text, LS):
     if LS == 'lemmatize' : out = lemmatize(tokens)
     return ' '.join(out)
 
-### Training Set
 corpus = []
-for text in Xtrain:
+for text in reviews:
     text = tokenize(text, 'stem')
     corpus.append(text)
 
 #create a matrix of token counts
 from sklearn.feature_extraction.text import CountVectorizer
 count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(corpus)
+corpus_counts = count_vect.fit_transform(corpus)
 
 #create a matrix of tfidf
 from sklearn.feature_extraction.text import TfidfTransformer
 tfidf_trans = TfidfTransformer()
-X_train_tfidf = tfidf_trans.fit_transform(X_train_counts)
+corpus_tfidf = tfidf_trans.fit_transform(corpus_counts)
 
-### Test Set
-test_set = []
-for text in Xtest:
-    text = tokenize(text, 'stem')
-    test_set.append(text)
-
-X_new_counts = count_vect.transform(test_set)
-X_test_tfidf = tfidf_trans.transform(X_new_counts)
+Xtrain, Xtest, Ytrain, Ytest = train_test_split(corpus, score, test_size=0.2, random_state=42)
 
 print("done preprocessing")
 
+print(Xtrain.shape)
+exit()
 ### Feature Reduction
 # take top N thousand words
 # use only semantic lexicons
