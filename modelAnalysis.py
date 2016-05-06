@@ -70,11 +70,13 @@ for text in Xtrain:
 
 #create a matrix of token counts
 from sklearn.feature_extraction.text import CountVectorizer
-X_train_counts = CountVectorizer().fit_transform(corpus)
+count_vect = CountVectorizer()
+X_train_counts = count_vect.fit_transform(corpus)
 
 #create a matrix of tfidf
 from sklearn.feature_extraction.text import TfidfTransformer
-X_train_tfidf = TfidfTransformer().fit_transform(X_train_counts)
+tfidf_trans = TfidfTransformer()
+X_train_tfidf = tfidf_trans.fit_transform(X_train_counts)
 
 ### Test Set
 test_set = []
@@ -82,8 +84,8 @@ for text in Xtest:
     text = tokenize(text, 'stem')
     test_set.append(text)
 
-X_new_counts = CountVectorizer().fit_transform(test_set)
-X_test_tfidf = TfidfTransformer().fit_transform(X_new_counts)
+X_new_counts = count_vect.transform(test_set)
+X_test_tfidf = tfidf_trans.transform(X_new_counts)
 
 print("done preprocessing")
 
