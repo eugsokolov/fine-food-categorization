@@ -14,10 +14,13 @@ q = pd.read_sql_query("""
 	SELECT Score, Summary, Text
 	FROM Reviews
 	WHERE Score != 3
-	limit 10000
+	limit 1000
 	""", con)
 reviews = q['Text']
 score = q['Score']
+
+l = [len(text) for text in q['Text']]
+length = np.asarray(l)
 
 # The reviews are preprocessed (as of now: lowercased & stemmed)
 reviews_preprocessed, scores_posneg = saf.preprocess_stem(reviews, score)
