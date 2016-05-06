@@ -1,15 +1,8 @@
 import sqlite3
 import pandas as pd
 import numpy as np
-
-import string
-from nltk import word_tokenize
-from nltk.util import ngrams
-from nltk.stem.porter import PorterStemmer
-from nltk.corpus import stopwords
 #nltk.download('punkt')
 #nltk.download('stopwords')
-
 from sklearn.cross_validation import train_test_split
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
@@ -34,23 +27,29 @@ score = q['Score']
 score = score.map(partition)
 Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
 
-intab = string.punctuation
-outtab = "                                "
-trantab = str.maketrans(intab, outtab)
-
-# TODO add lemmatization
-
-stemmer = PorterStemmer()
+### Preprocessing
+import string
+from nltk import word_tokenize
+from nltk.util import ngrams
+from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
+stemmer = PorterStemmer()
+
 def stem_tokens(tokens, stemmer):
     stemmed = []
     for item in tokens:
         stemmed.append(stemmer.stem(item))
     return stemmed
 
+# TODO add lemmatization
+
 def tokenize(text):
     tokens = word_tokenize(text)
+    s1 = dict((k,1) for k in stopwords.words('english'))
+    s2 = dict((k,1) for k in string.punctuation)
     #tokens = [word for word in tokens if word not in stopwords.words('english')]
+    tokens = [i for i in tokens if i not in s1 and i not in s2]
+    #tokens = ngrams(tokens, 2)
     stems = stem_tokens(tokens, stemmer)
     return ' '.join(stems)
 
@@ -83,6 +82,11 @@ X_test_tfidf = tfidf_transformer.transform(X_new_counts)
 
 print("done preprocessing")
 
+
+
+### Feature Reduction
+
+
 ### Model Analysis
 prediction = dict()
 
@@ -90,28 +94,27 @@ from sklearn import linear_model
 logreg = linear_model.LogisticRegression(C=1e5)
 logreg.fit(X_train_tfidf, Ytrain)
 prediction['Logistic'] = logreg.predict(X_test_tfidf)
-print("done logistic")
+#print("done logistic")
 
 from sklearn import svm
 #clf = svm.SVR().fit(X_train_tfidf, Ytrain)
-# NEED FEATURE REDUCTION
 #prediction['SVM'] = logreg.predict(X_test_tfidf)
 print("done svm")
 
-from sklearn.ensemble import RandomForestClassifier
+#from sklearn.ensemble import RandomForestClassifier
 #rf = RandomForestClassifier(n_estimators=2).fit(X_train_tfidf, Ytrain)
 #prediction['Random Forest'] = rf.predict(X_test_tfidf)
-print("done rf")
+#print("done rf")
 
-from sklearn.naive_bayes import MultinomialNB
-model = MultinomialNB().fit(X_train_tfidf, Ytrain)
-prediction['Multinomial'] = model.predict(X_test_tfidf)
-print("done mnb")
+#from sklearn.naive_bayes import MultinomialNB
+#model = MultinomialNB().fit(X_train_tfidf, Ytrain)
+#prediction['Multinomial'] = model.predict(X_test_tfidf)
+#print("done mnb")
 
-from sklearn.naive_bayes import BernoulliNB
-model = BernoulliNB().fit(X_train_tfidf, Ytrain)
-prediction['Bernoulli'] = model.predict(X_test_tfidf)
-print("done bnb")
+#from sklearn.naive_bayes import BernoulliNB
+#model = BernoulliNB().fit(X_train_tfidf, Ytrain)
+#prediction['Bernoulli'] = model.predict(X_test_tfidf)
+#print("done bnb")
 
 y = np.array(Ytest).astype('str')
 for model, predicted in prediction.items():
