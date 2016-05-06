@@ -82,8 +82,8 @@ for text in Xtest:
     text = tokenize(text, 'stem')
     test_set.append(text)
 
-X_new_counts = CountVectorizer().transform(test_set)
-X_test_tfidf = TfidfTransformer().transform(X_new_counts)
+X_new_counts = CountVectorizer().fit_transform(test_set)
+X_test_tfidf = TfidfTransformer().fit_transform(X_new_counts)
 
 print("done preprocessing")
 
@@ -97,7 +97,7 @@ prediction = dict()
 # further subclassify data
 
 from sklearn import linear_model
-logreg = linear_model.LogisticRegression(C=1e5, class_weight='balanced')
+logreg = linear_model.LogisticRegression(C=1e5, class_weight='auto')
 logreg.fit(X_train_tfidf, Ytrain)
 prediction['Logistic'] = logreg.predict(X_test_tfidf)
 print("done logistic")
