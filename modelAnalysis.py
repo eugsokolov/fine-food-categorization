@@ -18,45 +18,53 @@ q = pd.read_sql_query("""
 SELECT Score, Summary, Text
 FROM Reviews
 WHERE Score != 3
+limit 1000
 """, con)
 
 reviews = q['Text']
 score = q['Score']
 score = score.map(partition)
+
+# add length of review as feature
+
+
+
 Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
 
 ### Preprocessing
-import string
-from nltk import word_tokenize
-from nltk.util import ngrams
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 stemmer = PorterStemmer()
-
 def stem_tokens(tokens, stemmer):
     stemmed = []
     for item in tokens:
         stemmed.append(stemmer.stem(item))
     return stemmed
 
-# TODO add lemmatization
+from nltk.stem import WordNetLemmatizer
+def lemmatize(tokens):
+    wnl = WordNetLemmatizer()
+    text = [i for i in tokens if i not in wnl]
+    return text
 
+import string
+from nltk import word_tokenize
+from nltk.util import ngrams
 s1 = dict((k,1) for k in stopwords.words('english'))
 s2 = dict((k,1) for k in string.punctuation)
-def tokenize(text):
+def tokenize(text, LS):
     tokens = word_tokenize(text.lower())
-    #tokens = [word for word in tokens if word not in stopwords.words('english')]
     tokens = [i for i in tokens if i not in s1 and i not in s2]
     #tokens = ngrams(tokens, 2)
-    stems = stem_tokens(tokens, stemmer)
-    return ' '.join(stems)
+    if LS == 'stem': out = stem_tokens(tokens, stemmer)
+    if LS == 'lemmatize' : out = lemmatize(tokens)
+    return ' '.join(out)
 
 ### Training Set
 corpus = []
 for text in Xtrain:
     text = tokenize(text)
     corpus.append(text)
-exit()
 
 #create a matrix of token counts
 from sklearn.feature_extraction.text import CountVectorizer
@@ -84,11 +92,18 @@ print("done preprocessing")
 ### Model Analysis
 prediction = dict()
 
+# further subclassify data
+
 from sklearn import linear_model
-logreg = linear_model.LogisticRegression(C=1e5)
+logreg = linear_model.LogisticRegression(C=1e5, class_weight='balanced')
 logreg.fit(X_train_tfidf, Ytrain)
 prediction['Logistic'] = logreg.predict(X_test_tfidf)
 print("done logistic")
+
+from sklearn.naive_bayes import MultinomialNB
+model = MultinomialNB(fit_prior=True).fit(X_train_tfidf, Ytrain)
+prediction['Multinomial'] = model.predict(X_test_tfidf)
+print("done mnb")
 
 #from sklearn import svm
 #clf = svm.SVR().fit(X_train_tfidf, Ytrain)
@@ -99,16 +114,6 @@ print("done logistic")
 #rf = RandomForestClassifier(n_estimators=2).fit(X_train_tfidf, Ytrain)
 #prediction['Random Forest'] = rf.predict(X_test_tfidf)
 #print("done rf")
-
-#from sklearn.naive_bayes import MultinomialNB
-#model = MultinomialNB().fit(X_train_tfidf, Ytrain)
-#prediction['Multinomial'] = model.predict(X_test_tfidf)
-#print("done mnb")
-
-#from sklearn.naive_bayes import BernoulliNB
-#model = BernoulliNB().fit(X_train_tfidf, Ytrain)
-#prediction['Bernoulli'] = model.predict(X_test_tfidf)
-#print("done bnb")
 
 y = np.array(Ytest).astype('str')
 for model, predicted in prediction.items():
