@@ -27,6 +27,8 @@ score = score.map(partition)
 
 # add length of review as feature
 
+for summary in q['Summary']:
+    s = len(summary)
 
 
 Xtrain, Xtest, Ytrain, Ytest = train_test_split(reviews, score, test_size=0.2, random_state=42)
@@ -44,7 +46,7 @@ def stem_tokens(tokens, stemmer):
 from nltk.stem import WordNetLemmatizer
 def lemmatize(tokens):
     wnl = WordNetLemmatizer()
-    text = [i for i in tokens if i not in wnl]
+    text = " ".join()
     return text
 
 import string
@@ -63,25 +65,25 @@ def tokenize(text, LS):
 ### Training Set
 corpus = []
 for text in Xtrain:
-    text = tokenize(text)
+    text = tokenize(text, 'stem')
     corpus.append(text)
 
 #create a matrix of token counts
 from sklearn.feature_extraction.text import CountVectorizer
-X_train_counts = CountVectorizer.fit_transform(corpus)
+X_train_counts = CountVectorizer().fit_transform(corpus)
 
 #create a matrix of tfidf
 from sklearn.feature_extraction.text import TfidfTransformer
-X_train_tfidf = TfidfTransformer.fit_transform(X_train_counts)
+X_train_tfidf = TfidfTransformer().fit_transform(X_train_counts)
 
 ### Test Set
 test_set = []
 for text in Xtest:
-    text = tokenize(text)
+    text = tokenize(text, 'stem')
     test_set.append(text)
 
-X_new_counts = CountVectorizer.transform(test_set)
-X_test_tfidf = TfidfTransformer.transform(X_new_counts)
+X_new_counts = CountVectorizer().transform(test_set)
+X_test_tfidf = TfidfTransformer().transform(X_new_counts)
 
 print("done preprocessing")
 
