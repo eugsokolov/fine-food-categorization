@@ -134,7 +134,7 @@ def tfidf_weights(preprocessed_training_reviews, preprocessed_test_reviews):
 	from sklearn.feature_extraction.text import CountVectorizer
 	from sklearn.feature_extraction.text import TfidfTransformer
 	
-	count_vect = CountVectorizer(analyzer='char_wb', ngram_range=(2, 2))
+	count_vect = CountVectorizer(analyzer='word', ngram_range=(2, 2))
 	tfidf_trans = TfidfTransformer()
 
 	training_word_counts = count_vect.fit_transform(preprocessed_training_reviews)
@@ -154,7 +154,7 @@ def LogReg(train_review_features, train_review_labels, test_review_features):
 	"""
 	print('Applying Logistic Regression...')
 	from sklearn import linear_model
-	logreg = linear_model.LogisticRegression(C=1e5, class_weight='auto')
+	logreg = linear_model.LogisticRegression(C=1e5)
 	logreg.fit(train_review_features, train_review_labels)
 	prediction = logreg.predict(test_review_features)
 	print('Finished Logistic Regression!\n')
