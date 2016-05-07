@@ -8,6 +8,7 @@ from nltk import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 import pickle
+import operator
 
 # Function for loading in Harvard's positive/negative word lexicons
 def load_lexicons():
@@ -49,7 +50,7 @@ def stemming(tokens):
 	return tokens_stemmed
 
 # Count top words
-def count_top(reviews_preprocessed, scores_posneg):
+def counting(reviews_preprocessed, scores_posneg):
 	positive_words = dict()
 	negative_words = dict()
 	position = 0
@@ -71,7 +72,7 @@ def count_top(reviews_preprocessed, scores_posneg):
 		position += 1
 	return positive_words, negative_words
 
-# Save dictionaries function
+# Python object saver/load functions
 def save_obj(obj, name):
     with open(name + '.pkl', 'wb') as f:
         pickle.dump(obj, f)
@@ -83,8 +84,8 @@ def load_obj(name):
 # Pre-processing function for reviews
 def preprocess(reviews, score):
 	"""
-	This function preprocesses the reviews by lowercasing, stemming, and removing punctuation/stopwords.
-	This function rates reviews less than 3 negative, and above 3 positive.
+	This function preprocesses the reviews by lowercasing & stemming.
+	This function rates reviews less than 3 negative (-1), and above 3 positive (1).
 	This function extracts the lengths of preprocessed reviews.
 	"""
 	reviews_stemmed = []
@@ -98,6 +99,31 @@ def preprocess(reviews, score):
 		lengths.append(len(tokens_stemmed))
 	print('Preprocessing Finished!\n')
 	return reviews_stemmed, score, lengths
+
+# Keep only top words in pre-processed reviews
+
+def keep_top(reviews_preprocessed, positive_top_words, negative_top_words):
+	reviews_preprocessed_topwords = []
+	for review in reviews_preprocessed:
+		tokens = word_tokenize(review)
+		new_tokens = []
+		for token in tokens:
+			if token in positive_top_words:
+				new_tokens.append(token)
+			elif token in negative_top_words:
+				new_tokens.append(token)
+			else:
+				continue
+		new_review = ' '.join(new_tokens)
+		reviews_preprocessed_topwords.append(new_review)
+	return reviews_preprocessed_topwords
+
+# Sort dictionaries from lowest to highest values
+
+def topwords_sorter(positive_words, negative_words, top_count):
+	positive_top_words = dict(sorted(positive_words.iteritems(), 	key=operator.itemgetter(1), reverse=True)[:top_count])
+	negative_top_words = dict(sorted(negative_words.iteritems(), key=operator.itemgetter(1), reverse=True)[:top_count])
+	return positive_top_words, negative_top_words
 
 # Tf-IDf Weighting Scheme
 def tfidf_weights(preprocessed_training_reviews, preprocessed_test_reviews):
@@ -128,7 +154,7 @@ def LogReg(train_review_features, train_review_labels, test_review_features):
 	"""
 	print('Applying Logistic Regression...')
 	from sklearn import linear_model
-	logreg = linear_model.LogisticRegression(C=1e5, class_weight='balanced')
+	logreg = linear_model.LogisticRegression(C=1e5, class_weight='auto')
 	logreg.fit(train_review_features, train_review_labels)
 	prediction = logreg.predict(test_review_features)
 	print('Finished Logistic Regression!\n')
