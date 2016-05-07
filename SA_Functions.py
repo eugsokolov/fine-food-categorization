@@ -8,6 +8,16 @@ from nltk import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 
+# Function for loading in Harvard's positive/negative word lexicons
+def load_lexicons():
+	"""
+	This function loads in Harvard's postivie/negative word lexicons.
+	"""
+	positive_words = np.genfromtxt('Positive_&_Negative_Words.csv', skip_header = 1, usecols = (0, ), delimiter = ',', dtype = 'str')
+	negative_words = np.genfromtxt('Positive_&_Negative_Words.csv', skip_header = 1, usecols = (1, ), delimiter = ',', dtype = 'str') 
+	return positive_words, negative_words
+	
+# Function for mapping 1-5 ratings to positive/negative labels
 def partition(x):
 	"""
 	This function rates reviews less than 3 negative, and above 3 positive.
@@ -16,39 +26,55 @@ def partition(x):
 		return (-1)
 	else:
 		return (1)
-		
-def tokenize_stem(text):
+
+# Function to tokenize & lowercase reviews
+def tokenize_lower(text):
 	"""
-	This function makes a review lower case and stems it.
+	This function tokenizes a review & makes it lower case.
 	"""
 	tokens = word_tokenize(text.lower())
+	return tokens
+
+# Stemming function
+def stemming(tokens):
+	"""
+	This function stems a tokenized review & gets rid of punctuation/stopwords.
+	"""
 	stemmer = PorterStemmer()
 	s1 = dict((k,1) for k in stopwords.words('english'))
 	s2 = dict((k,1) for k in string.punctuation)
 	tokens_stemmed = [stemmer.stem(i) for i in tokens if i not in s1 and i not in s2]
-	return ' '.join(tokens_stemmed)
-
-def preprocess_stem(reviews, score):
+	return tokens_stemmed
+	
+# Pre-processing function for reviews
+def preprocess(reviews, score):
 	"""
-	This function preprocesses the reviews by lowercasing & stemming them.
+	This function preprocesses the reviews by lowercasing, stemming, and removing punctuation/stopwords.
 	This function rates reviews less than 3 negative, and above 3 positive.
+	This function extracts the lengths of preprocessed reviews.
 	"""
+	reviews_stemmed = []
+	lengths = []
 	print('Preprocessing...')
 	score = score.map(partition)
-	reviews_stemmed = [tokenize_stem(text) for text in reviews]
+	for review in reviews:
+		tokens = tokenize_lower(review)
+		tokens_stemmed = stemming(tokens)
+		reviews_stemmed.append((' '.join(tokens_stemmed)))
+		lengths.append(len(tokens_stemmed))
 	print('Preprocessing Finished!\n')
-	return reviews_stemmed, score
+	return reviews_stemmed, score, lengths
 
 # Tf-IDf Weighting Scheme
-
 def tfidf_weights(preprocessed_training_reviews, preprocessed_test_reviews):
 	"""
 	This function applies the Tf-IDf weighting scheme to the training & test documents.
 	"""
+	print('Creating Tf-IDf weight vectors...')
 	from sklearn.feature_extraction.text import CountVectorizer
 	from sklearn.feature_extraction.text import TfidfTransformer
 	
-	count_vect = CountVectorizer()
+	count_vect = CountVectorizer(analyzer='char_wb', ngram_range=(2, 2))
 	tfidf_trans = TfidfTransformer()
 
 	training_word_counts = count_vect.fit_transform(preprocessed_training_reviews)
@@ -56,11 +82,12 @@ def tfidf_weights(preprocessed_training_reviews, preprocessed_test_reviews):
 	
 	test_word_counts = count_vect.transform(preprocessed_test_reviews)
 	test_tfidf = tfidf_trans.transform(test_word_counts)
-	
+	print('Finished creating Tf-IDf weight vectors!')
 	return train_tfidf, test_tfidf
-	
-# Model Functions
 
+## Model Functions
+
+# Logistic Regression Model
 def LogReg(train_review_features, train_review_labels, test_review_features):
 	"""
 	This function applies a logistic regression model for classification.
@@ -72,7 +99,8 @@ def LogReg(train_review_features, train_review_labels, test_review_features):
 	prediction = logreg.predict(test_review_features)
 	print('Finished Logistic Regression!\n')
 	return prediction
-	
+
+# Multinomial Naive Bayes Model
 def MultiNB(train_review_features, train_review_labels, test_review_features):
 	"""
 	This function applies a multinomial naive bayes model for classification.
@@ -84,14 +112,12 @@ def MultiNB(train_review_features, train_review_labels, test_review_features):
 	print("Finished Multinomial Naive Bayes!\n")
 	return prediction
 
-# Display confusion matrices for models
-
+# Display confusion matrices for model
 def confusion(model_prediction, test_review_labels):
 	"""
 	This function computes confusion matrix for each model applied during testing.
 	"""
 	test_review_labels = np.array(test_review_labels).astype('str')
-	#for model, predicted in model_prediction_dict.items():
  	predicted = np.array(model_prediction).astype('str')
  	print(metrics.classification_report(test_review_labels, predicted))
  	print('\n')

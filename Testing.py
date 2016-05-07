@@ -12,18 +12,40 @@ import SA_Functions as saf
 con = sqlite3.connect('data/database.sqlite')
 q = pd.read_sql_query("""
 	SELECT Score, Summary, Text
-	FROM Reviews
-	WHERE Score != 3
-	limit 1000
-	""", con)
-reviews = q['Text']
+ 	FROM Reviews
+ 	WHERE Score != 3
+ 	limit 10
+ 	""", con)
+ 	
+reviews = q['Text'] 
 score = q['Score']
 
-l = [len(text) for text in q['Text']]
-length = np.asarray(l)
+# Load in positive/negative word lexicons
+# stemmer = PorterStemmer()
+# positive_words, negative_words = saf.load_lexicons()
+# positive_words = dict((stemmer.stem(k),1) for k in positive_words)
+# negative_words = dict((stemmer.stem(k),1) for k in negative_words)
 
-# The reviews are preprocessed (as of now: lowercased & stemmed)
-reviews_preprocessed, scores_posneg = saf.preprocess_stem(reviews, score)
+# The reviews are preprocessed (as of now: lowercased, stemmed, rid of punctuation & stopwords)
+reviews_preprocessed, scores_posneg, lengths = saf.preprocess(reviews, score)
+ 
+reviews_preprocessed = np.array(reviews_preprocessed)
+scores_posneg = np.array(scores_posneg)
+lengths = np.array(lengths)
+
+# np.save('reviews_preprocessed.npy', reviews_preprocessed)
+# np.save('scores_posneg.npy', scores_posneg)
+# np.save('lengths.npy', lengths)
+
+# reviews_preprocessed = np.load('reviews_preprocessed.npy')
+# scores_posneg = np.load('scores_posneg.npy')
+# lengths = np.load('lengths.npy')
+
+"""
+for i in range(100):
+	print(reviews_preprocessed[i])
+	print('\n')
+"""
 
 # Split reviews into a training set and testing set 
 reviews_train, reviews_test, reviews_train_labels, reviews_test_labels = train_test_split(reviews_preprocessed, scores_posneg, test_size = 0.2, random_state = 42)
