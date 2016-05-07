@@ -7,6 +7,7 @@ import string
 from nltk import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
+import pickle
 
 # Function for loading in Harvard's positive/negative word lexicons
 def load_lexicons():
@@ -38,14 +39,47 @@ def tokenize_lower(text):
 # Stemming function
 def stemming(tokens):
 	"""
-	This function stems a tokenized review & gets rid of punctuation/stopwords.
+	This function stems a tokenized review.
 	"""
 	stemmer = PorterStemmer()
-	s1 = dict((k,1) for k in stopwords.words('english'))
-	s2 = dict((k,1) for k in string.punctuation)
-	tokens_stemmed = [stemmer.stem(i) for i in tokens if i not in s1 and i not in s2]
+	#s1 = dict((k,1) for k in stopwords.words('english'))
+	#s2 = dict((k,1) for k in string.punctuation)
+	#tokens_stemmed = [stemmer.stem(i) for i in tokens if i not in s1 and i not in s2]
+	tokens_stemmed = [stemmer.stem(i) for i in tokens]
 	return tokens_stemmed
-	
+
+# Count top words
+def count_top(reviews_preprocessed, scores_posneg):
+	positive_words = dict()
+	negative_words = dict()
+	position = 0
+	for review in reviews_preprocessed:
+		if scores_posneg[position] == 1:
+			tokens = word_tokenize(review)
+			for token in tokens:
+				if token in positive_words:
+					positive_words[token] += 1
+				else:
+					positive_words[token] = 1
+		if scores_posneg[position] == -1:
+			tokens = word_tokenize(review)
+			for token in tokens:
+				if token in negative_words:
+					negative_words[token] += 1
+				else:
+					negative_words[token] = 1
+		position += 1
+	return positive_words, negative_words
+
+# Save dictionaries function
+def save_obj(obj, name):
+    with open(name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f)
+
+def load_obj(name):
+    with open(name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
 # Pre-processing function for reviews
 def preprocess(reviews, score):
 	"""
@@ -82,7 +116,7 @@ def tfidf_weights(preprocessed_training_reviews, preprocessed_test_reviews):
 	
 	test_word_counts = count_vect.transform(preprocessed_test_reviews)
 	test_tfidf = tfidf_trans.transform(test_word_counts)
-	print('Finished creating Tf-IDf weight vectors!')
+	print('Finished creating Tf-IDf weight vectors!\n')
 	return train_tfidf, test_tfidf
 
 ## Model Functions

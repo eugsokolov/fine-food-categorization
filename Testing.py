@@ -8,38 +8,37 @@ from nltk import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 import SA_Functions as saf
+import pickle
 
 con = sqlite3.connect('data/database.sqlite')
 q = pd.read_sql_query("""
 	SELECT Score, Summary, Text
  	FROM Reviews
  	WHERE Score != 3
- 	limit 10
+	limit 10
  	""", con)
  	
-reviews = q['Text'] 
+reviews = q['Text']
 score = q['Score']
 
-# Load in positive/negative word lexicons
-# stemmer = PorterStemmer()
-# positive_words, negative_words = saf.load_lexicons()
-# positive_words = dict((stemmer.stem(k),1) for k in positive_words)
-# negative_words = dict((stemmer.stem(k),1) for k in negative_words)
 
-# The reviews are preprocessed (as of now: lowercased, stemmed, rid of punctuation & stopwords)
+# The reviews are preprocessed (as of now: lowercased, stemmed)
 reviews_preprocessed, scores_posneg, lengths = saf.preprocess(reviews, score)
- 
-reviews_preprocessed = np.array(reviews_preprocessed)
-scores_posneg = np.array(scores_posneg)
-lengths = np.array(lengths)
 
-# np.save('reviews_preprocessed.npy', reviews_preprocessed)
-# np.save('scores_posneg.npy', scores_posneg)
-# np.save('lengths.npy', lengths)
+train_reviews_preprocessed = reviews_preprocessed[0:10]
+train_scores_posneg = scores_posneg[0:10]
 
-# reviews_preprocessed = np.load('reviews_preprocessed.npy')
-# scores_posneg = np.load('scores_posneg.npy')
-# lengths = np.load('lengths.npy')
+positive_words, negative_words = saf.count_top(train_reviews_preprocessed, train_scores_posneg)
+
+
+#saf.save_obj(positive_words, 'positive_words')
+#saf.save_obj(negative_words, 'negative_words')
+positive_words_check = saf.load_obj('positive_words')
+negative_words_check = saf.load_obj('negative_words')
+
+print(positive_words)
+print('---------------------------------------')
+print(positive_words_check)
 
 """
 for i in range(100):
