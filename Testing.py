@@ -34,8 +34,8 @@ scores_posneg = saf.load_obj('scores_posneg')
 lengths = saf.load_obj('lengths')
 
 ## Grab lowercased & stemmed training reviews
-# train_reviews_preprocessed = reviews_preprocessed[0:num_train_reviews]
-# train_scores_posneg = scores_posneg[0:num_train_reviews]
+#train_reviews_preprocessed = reviews_preprocessed[0:num_train_reviews]
+#train_scores_posneg = scores_posneg[0:num_train_reviews]
 
 
 ## Count words in lower-cased & stemmed training reviews to establish positive/negative word dicts
@@ -47,41 +47,13 @@ lengths = saf.load_obj('lengths')
 #negative_words = saf.load_obj('negative_words')
 
 ## Sort and get only top <#> words from each positive/negative dictionary
-#top_count = 500
+#top_count = 10000
 #positive_top_words, negative_top_words = saf.topwords_sorter(positive_words, negative_words, top_count)
 
 ## Process the reviews to only take top < # > words from each positive/negative dictionary
 #reviews_preprocessed_topwords = saf.keep_top(reviews_preprocessed, positive_top_words, negative_top_words)
 #saf.save_obj(reviews_preprocessed_topwords, 'reviews_preprocessed_topwords')
 #reviews_preprocessed_topwords = saf.load_obj('reviews_preprocessed_topwords')
-
-"""
-print(len(positive_words))
-print('-----------------------')
-print(len(negative_words))
-keys_a = set(positive_top_words.keys())
-keys_b = set(negative_top_words.keys())
-intersection = keys_a & keys_b
-print('-----------------------')
-print(len(intersection))
-
-for i in range(10):
-	print(reviews[i])
-	print('------------------')
-	print(reviews_preprocessed_topwords[i])
-	print('\n')
-
-print(positive_top_words)
-print('-----------------------')
-print(negative_top_words)
-keys_a = set(positive_top_words.keys())
-keys_b = set(negative_top_words.keys())
-intersection = keys_a & keys_b
-print('-----------------------')
-print(len(intersection))
-"""
-
-
 
 reviews_train = reviews_preprocessed[0:num_train_reviews]
 reviews_train_labels = scores_posneg[0:num_train_reviews]
@@ -92,8 +64,10 @@ reviews_test_labels = scores_posneg[num_train_reviews::]
 
 # Apply Tf-IDf weighting scheme to the training reviews & test reviews
 train_tfidf, test_tfidf = saf.tfidf_weights(reviews_train, reviews_test)
-saf.save_obj(train_tfidf, 'train_tfidf')
-saf.save_obj(test_tfidf, 'test_tfidf')
+#saf.save_obj(train_tfidf, 'train_tfidf')
+#saf.save_obj(test_tfidf, 'test_tfidf')
+#train_tfidf = saf.load_obj('train_tfidf')
+#test_tfidf = saf.load_obj('test_tfidf')
 
 # Apply Logistic Regression model for classification on test set
 prediction_LR = saf.LogReg(train_tfidf, reviews_train_labels, test_tfidf)

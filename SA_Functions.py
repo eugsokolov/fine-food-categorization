@@ -101,7 +101,6 @@ def preprocess(reviews, score):
 	return reviews_stemmed, score, lengths
 
 # Keep only top words in pre-processed reviews
-
 def keep_top(reviews_preprocessed, positive_top_words, negative_top_words):
 	reviews_preprocessed_topwords = []
 	for review in reviews_preprocessed:
@@ -119,7 +118,6 @@ def keep_top(reviews_preprocessed, positive_top_words, negative_top_words):
 	return reviews_preprocessed_topwords
 
 # Sort dictionaries from lowest to highest values
-
 def topwords_sorter(positive_words, negative_words, top_count):
 	positive_top_words = dict(sorted(positive_words.iteritems(), 	key=operator.itemgetter(1), reverse=True)[:top_count])
 	negative_top_words = dict(sorted(negative_words.iteritems(), key=operator.itemgetter(1), reverse=True)[:top_count])
@@ -154,7 +152,7 @@ def LogReg(train_review_features, train_review_labels, test_review_features):
 	"""
 	print('Applying Logistic Regression...')
 	from sklearn import linear_model
-	logreg = linear_model.LogisticRegression(C=1e5)
+	logreg = linear_model.LogisticRegression(C=1e5, class_weight = 'auto')
 	logreg.fit(train_review_features, train_review_labels)
 	prediction = logreg.predict(test_review_features)
 	print('Finished Logistic Regression!\n')
@@ -167,7 +165,7 @@ def MultiNB(train_review_features, train_review_labels, test_review_features):
 	"""
 	print('Applying Multinomial Naive Bayes...')
 	from sklearn.naive_bayes import MultinomialNB
-	model = MultinomialNB(fit_prior=True).fit(train_review_features, train_review_labels)
+	model = MultinomialNB(fit_prior=True, alpha = 0.01).fit(train_review_features, 	train_review_labels)
 	prediction = model.predict(test_review_features)
 	print("Finished Multinomial Naive Bayes!\n")
 	return prediction
